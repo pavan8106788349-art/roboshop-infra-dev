@@ -24,3 +24,8 @@ resource "aws_iam_role" "mysql" {
     local.common_tags
   )
 }
+
+resource "aws_iam_instance_profile" "mysql" {
+  name = "${var.project}-${var.environment}-mysql"
+  role = aws_iam_role.mysql.name
+}
