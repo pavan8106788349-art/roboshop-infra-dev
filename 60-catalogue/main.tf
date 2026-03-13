@@ -166,7 +166,6 @@ dynamic "tag" {
 resource "aws_autoscaling_policy" "catalogue" {
   autoscaling_group_name = aws_autoscaling_group.catalogue.name
   name                   = "${var.project}-${var.environment}-catalogue"
-  scaling_adjustment     = 4
   policy_type            = "TargetTrackingScaling"
  estimated_instance_warmup = 120 
 
