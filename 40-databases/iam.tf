@@ -23,3 +23,4 @@ resource "aws_iam_role" "mysql" {
     },
     local.common_tags
   )
+}  
