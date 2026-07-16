@@ -44,10 +44,11 @@ resource "aws_ec2_instance_state" "catalogue" {
 }
 
 resource "aws_ami_from_instance" "catalogue" {
-  name               = "${var.project}-${var.environment}-catalogue"
+  # roboshop-dev-catalogue-v3-i-h468sghy
+  name               = "${var.project}-${var.environment}-catalogue-${var.app_version}-${aws_instance.catalogue.id}"
   source_instance_id = aws_instance.catalogue.id
   depends_on = [aws_ec2_instance_state.catalogue]
-    tags = merge(
+  tags = merge(
     {
         Name = "${var.project}-${var.environment}-catalogue"
     },
@@ -78,7 +79,6 @@ resource "aws_launch_template" "catalogue" {
   name = "${var.project}-${var.environment}-catalogue"
   image_id = aws_ami_from_instance.catalogue.id
 
-  
   # once autoscaling sees less traffic, it will terminate the instance
   instance_initiated_shutdown_behavior = "terminate"
   instance_type = "t3.micro"
@@ -117,6 +117,7 @@ resource "aws_launch_template" "catalogue" {
         local.common_tags
     )
 }
+
 resource "aws_autoscaling_group" "catalogue" {
   name                      = "${var.project}-${var.environment}-catalogue"
   max_size                  = 10
@@ -130,7 +131,8 @@ resource "aws_autoscaling_group" "catalogue" {
     id      = aws_launch_template.catalogue.id
     version = "$Latest"
   }
- 
+
+  
   vpc_zone_identifier       = [local.private_subnet_id]
   target_group_arns = [aws_lb_target_group.catalogue.arn]
 
@@ -142,7 +144,7 @@ resource "aws_autoscaling_group" "catalogue" {
     triggers = ["launch_template"]
   }
 
-    dynamic "tag" {
+  dynamic "tag" {
     for_each = merge(
         {
             Name = "${var.project}-${var.environment}-catalogue"
@@ -156,7 +158,7 @@ resource "aws_autoscaling_group" "catalogue" {
     }
   }
 
-    # with in 15min autoscaling should be successful
+  # with in 15min autoscaling should be successful
   timeouts {
     delete = "15m"
   }
@@ -166,8 +168,9 @@ resource "aws_autoscaling_policy" "catalogue" {
   autoscaling_group_name = aws_autoscaling_group.catalogue.name
   name                   = "${var.project}-${var.environment}-catalogue"
   policy_type            = "TargetTrackingScaling"
+  estimated_instance_warmup = 120
 
-    target_tracking_configuration {
+  target_tracking_configuration {
     predefined_metric_specification {
       predefined_metric_type = "ASGAverageCPUUtilization"
     }
@@ -176,9 +179,10 @@ resource "aws_autoscaling_policy" "catalogue" {
   }
 }
 
+# This depends on target group
 resource "aws_lb_listener_rule" "catalogue" {
   listener_arn = local.backend_alb_listener_arn
-  priority     = 99
+  priority     = 10
 
   action {
     type             = "forward"
