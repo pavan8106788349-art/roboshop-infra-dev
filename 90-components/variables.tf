@@ -2,7 +2,7 @@ variable "components" {
   default = {
         # backend components are attaching to backend ALB
         catalogue = {
-            rule_priority = 10
+            rule_priority = 20
         }
         #  user = {
         #     rule_priority = 20
