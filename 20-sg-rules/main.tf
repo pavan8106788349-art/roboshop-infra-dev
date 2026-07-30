@@ -72,7 +72,7 @@ resource "aws_security_group_rule" "redis_cart" {
   security_group_id = local.redis_sg_id
 }
 
-# MYSQL
+# MySQL
 resource "aws_security_group_rule" "mysql_bastion" {
   type              = "ingress"
   from_port         = 22
@@ -163,7 +163,7 @@ resource "aws_security_group_rule" "cart_bastion" {
   to_port           = 22
   protocol          = "tcp"
   # Where traffic is coming from
-  source_security_group_id = local.backend_alb_sg_id
+  source_security_group_id = local.bastion_sg_id
   security_group_id = local.cart_sg_id
 }
 
@@ -301,7 +301,7 @@ resource "aws_security_group_rule" "frontend_bastion" {
   security_group_id = local.frontend_sg_id
 }
 
-resource "aws_security_group_rule" "frontend_frontend-alb" {
+resource "aws_security_group_rule" "frontend_frontend_alb" {
   type              = "ingress"
   from_port         = 80
   to_port           = 80
@@ -321,3 +321,4 @@ resource "aws_security_group_rule" "frontend_alb_public" {
   cidr_blocks = ["0.0.0.0/0"]
   security_group_id = local.frontend_alb_sg_id
 }
+
